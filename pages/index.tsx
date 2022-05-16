@@ -1,22 +1,8 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-import axios from 'axios';
-import { useEffect } from 'react';
+import App from '../src/components/App';
 
 const Home: NextPage = () => {
-  console.log('home');
-
-  useEffect(() => {
-    axios.get('api/hello')
-      .then((d) => console.log(d));
-  }, []);
-  return (
-    <div className={styles.container}>
-      
-    </div>
-  )
+  return <App />;
 }
 
 export default Home
