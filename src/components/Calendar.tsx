@@ -13,7 +13,9 @@ function Calendar({ data = {}, name }: { data: any, name?: string }) {
     if (!calendar[year]) return;
     const m = [];
     for (let i = 0; i < 12; i++) {
+      const day = new Date(year,i);
       m.push(<Month key={i} v={i+1} 
+                start={day.getDay()}
                 data={calendar[year][i+1]} 
                 max={dInM[i]} />);
     }

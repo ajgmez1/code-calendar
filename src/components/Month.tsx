@@ -1,26 +1,32 @@
 import Day from "./Day";
 
-function Month({ v, data = [], max = 31 }: { v?: number, data?: number[], max: number }) {
+function Month(
+  { v = 1, data = [], max = 31, start = 0 }: 
+  { v?: number, data?: number[], max: number, start: number }
+) {
 
-  const nthDayOfWeek = (d: number) => {
+  const week = (wk: number) => {
     let w = [];
-    for (let wk = 0; wk < 5; wk++) {
-      const day = d+1+(wk*7);
-      if (day <= max) {
-        w.push(
-          <Day key={wk} k={v+"-"+day} v={data[day]} />
-        );
-      }
+    for (let d = 1; d <= 7; d++) {
+      const day = d+(wk*7)-start;
+      if (d === 1 && day > max) return w;
+      w.push(
+        <div style={day > max || day < 1 ? {visibility: 'hidden'} : {}}>
+          <Day key={wk} 
+            k={v+"-"+day} 
+            v={data[day]} />
+        </div>
+      );
     }
     return w;
   };
   
   const days = (() => {
     const d = [];
-    for (let i = 0; i < 7; i++) {
+    for (let wk = 0; wk < 6; wk++) {
       d.push(
-        <div key={i} style={{padding: '3px'}}>
-          {nthDayOfWeek(i)}
+        <div key={wk} style={{display:'inline-block'}}>
+          {week(wk)}
         </div>
       );
     }
