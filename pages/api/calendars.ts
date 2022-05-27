@@ -41,12 +41,24 @@ export default async (
 
       for (const c in lcCalendarRaw) {
         const d = new Date(+c*1000);
-        lc.calendar[d.toISOString().substring(0,10)] = lcCalendarRaw[c];
+        const y = d.getFullYear();
+        const m = d.getMonth()+1;
+        const day = d.getDate();
+
+        lc.calendar[y] = lc.calendar[y] ? lc.calendar[y] : {};
+        lc.calendar[y][m] = lc.calendar[y][m] ? lc.calendar[y][m] : {};
+        lc.calendar[y][m][day] = lcCalendarRaw[c];
       }
 
       for (const c of g.data.items) {
-        const date =  c.commit.author.date.substring(0,10);
-        gh.calendar[date] = gh.calendar[date] ? +gh.calendar[date]+1 : 1;
+        const d = new Date(c.commit.author.date.substring(0,10));
+        const y = d.getFullYear();
+        const m = d.getMonth()+1;
+        const day = d.getDate();
+
+        gh.calendar[y] = gh.calendar[y] ? gh.calendar[y] : {};
+        gh.calendar[y][m] = gh.calendar[y][m] ? gh.calendar[y][m] : {};
+        gh.calendar[y][m][day] = gh.calendar[y][m][day] ? +gh.calendar[y][m][day]+1 : 1; 
       }
 
       res.status(d.status).json({
