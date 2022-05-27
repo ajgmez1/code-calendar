@@ -1,13 +1,29 @@
+import Month from "./Month";
 
-function Calendar({ data = {} }: { data: any }) {
+function Calendar({ data = {}, name }: { data: any, name?: string }) {
   const { calendar = {} } = data;
-  const d = Object.entries(calendar);
+
+  const year = 2022;
+  const leapYear = year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
+  const dInM = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  console.log(name, calendar);
+  
+  const Months = (() => {
+    if (!calendar[year]) return;
+    const m = [];
+    for (let i = 0; i < 12; i++) {
+      m.push(<Month key={i} v={i+1} 
+                data={calendar[year][i+1]} 
+                max={dInM[i]} />);
+    }
+    return m;
+  })();
 
   return (
-    <div style={{border:'1px solid black', padding: '5px'}}> 
-      {d.map(([k,v]: [string, any]) => (
-        <p key={k}><span> {k} </span><span> {v} </span></p>
-      ))}
+    <div style={{padding: '5px'}}> 
+      {name} <br/>
+      {Months}
     </div>
   );
 }
