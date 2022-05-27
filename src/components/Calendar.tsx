@@ -14,10 +14,14 @@ function Calendar({ data = {}, name }: { data: any, name?: string }) {
 
     let day = first;
     for (let i = 0; i <= 12; i++) {
+      const start = i === 0 ? day.day : 1;
+      const finish = i === 12 ? day.day : day.daysInMonth;
+      const startDay = day.set({day:1}).weekday%7;
+      
       m.push(<Month key={i} v={day.month} 
-                start={day.weekday%7}
+                startDay={startDay}
                 data={calendar[day.year][day.month]} 
-                max={day.daysInMonth} />);
+                range={[start, finish]} />);
 
       day = day.plus({months:1});
     }

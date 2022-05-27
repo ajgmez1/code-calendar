@@ -1,17 +1,17 @@
 import Day from "./Day";
 
 function Month(
-  { v = 1, data = [], max = 31, start = 0 }: 
-  { v?: number, data?: number[], max: number, start: number }
+  { v = 1, data = [], range = [1,31], startDay = 0 }: 
+  { v?: number, data?: number[], range: number[], startDay: number }
 ) {
 
   const week = (wk: number) => {
     let w = [];
     for (let d = 1; d <= 7; d++) {
-      const day = d+(wk*7)-start;
-      if (d === 1 && day > max) return w;
+      const day = d+(wk*7)-startDay;
+      if ((d === 1 && day > range[1]) || (d === 7 && day < range[0])) return [];
       w.push(
-        <div key={day} style={day > max || day < 1 ? {visibility: 'hidden'} : {}}>
+        <div key={day} style={day > range[1] || day < range[0] ? {visibility: 'hidden'} : {}}>
           <Day k={v+"-"+day} 
             v={data[day]} />
         </div>
