@@ -1,23 +1,25 @@
 import Month from "./Month";
+import { DateTime } from 'luxon';
 
 function Calendar({ data = {}, name }: { data: any, name?: string }) {
   const { calendar = {} } = data;
-
-  const year = 2022;
-  const leapYear = year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
-  const dInM = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-
+  
   console.log(name, calendar);
   
   const Months = (() => {
-    if (!calendar[year]) return;
     const m = [];
-    for (let i = 0; i < 12; i++) {
-      const day = new Date(year,i);
-      m.push(<Month key={i} v={i+1} 
-                start={day.getDay()}
-                data={calendar[year][i+1]} 
-                max={dInM[i]} />);
+    let last = DateTime.now(); // change with params
+    let first = last.minus({years: 1});
+    if (!calendar[first.year]) return;
+
+    let day = first;
+    for (let i = 0; i <= 12; i++) {
+      m.push(<Month key={i} v={day.month} 
+                start={day.weekday%7}
+                data={calendar[day.year][day.month]} 
+                max={day.daysInMonth} />);
+
+      day = day.plus({months:1});
     }
     return m;
   })();

@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios';
+import { DateTime } from 'luxon';
 
 export default async (
   req: NextApiRequest,
@@ -39,25 +40,34 @@ export default async (
 
       const lcCalendarRaw = JSON.parse(d.data.data.matchedUser.userCalendar.submissionCalendar);
 
-      for (const c in lcCalendarRaw) {
-        const d = new Date(+c*1000);
-        const y = d.getFullYear();
-        const m = d.getMonth()+1;
-        const day = d.getDate();
+      let range = DateTime.now();
+      for (let i = 0; i <= 12; i++) {
+        const y = range.year;
+        const m = range.month;
 
         lc.calendar[y] = lc.calendar[y] ? lc.calendar[y] : {};
         lc.calendar[y][m] = lc.calendar[y][m] ? lc.calendar[y][m] : {};
+        gh.calendar[y] = gh.calendar[y] ? gh.calendar[y] : {};
+        gh.calendar[y][m] = gh.calendar[y][m] ? gh.calendar[y][m] : {};
+
+        range = range.minus({months:1});
+      }
+
+      for (const c in lcCalendarRaw) {
+        const d = DateTime.fromSeconds(+c);
+        const y = d.year;
+        const m = d.month;
+        const day = d.day;
+
         lc.calendar[y][m][day] = lcCalendarRaw[c];
       }
 
       for (const c of g.data.items) {
-        const d = new Date(c.commit.author.date.substring(0,10));
-        const y = d.getFullYear();
-        const m = d.getMonth()+1;
-        const day = d.getDate();
+        const d = DateTime.fromISO(c.commit.author.date.substring(0,10));
+        const y = d.year;
+        const m = d.month;
+        const day = d.day;
 
-        gh.calendar[y] = gh.calendar[y] ? gh.calendar[y] : {};
-        gh.calendar[y][m] = gh.calendar[y][m] ? gh.calendar[y][m] : {};
         gh.calendar[y][m][day] = gh.calendar[y][m][day] ? +gh.calendar[y][m][day]+1 : 1; 
       }
 

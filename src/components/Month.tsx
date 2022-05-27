@@ -11,9 +11,8 @@ function Month(
       const day = d+(wk*7)-start;
       if (d === 1 && day > max) return w;
       w.push(
-        <div style={day > max || day < 1 ? {visibility: 'hidden'} : {}}>
-          <Day key={wk} 
-            k={v+"-"+day} 
+        <div key={day} style={day > max || day < 1 ? {visibility: 'hidden'} : {}}>
+          <Day k={v+"-"+day} 
             v={data[day]} />
         </div>
       );
