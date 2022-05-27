@@ -2,10 +2,10 @@
   border: 1px solid black;
   padding: 3px;
   cursor: default;
-  // &:hover .tooltip {
-  //   visibility: visible;
-  //   opacity: 1;
-  // }
+  &:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
 }
 
 .tooltip {
