@@ -1,19 +1,25 @@
 .calendar {
-  padding: 5px;
+  padding: 20px 20px 0;
 }
 
 .calendar .header {
   display: flex;
 }
-.calendar .header h2 {
+.calendar .header h3 {
   margin: 0;
 }
 .calendar .header p {
-  margin: 0.5em;
+  margin: 0.2em 0.5em;
 }
 
 .year {
-  padding: 0 50px;
+  text-align: center;
+  padding: 20px;
+}
+
+.halfyear {
+  margin: 0 auto;
+  display: inline-block;
 }
 
 .month {

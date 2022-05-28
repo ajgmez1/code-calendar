@@ -11,12 +11,19 @@ function Calendar(
   return (
     <div className={styles.calendar}> 
       <div className={styles.header}>
-        <h2>{name}</h2> <p>{count} {type} in {yearStr}</p>
+        <h3>{name}</h3> <p>{count} {type} in {yearStr}</p>
       </div>
       <div className={styles.year}>
-        {Object.entries(calendar).map(([k, v]: [string, any]) => (
-          <Month key={k} info={v.info} data={v.data}  />
-        ))}
+        <div className={styles.halfyear}>
+          {Object.entries(calendar).slice(0,7).map(([k, v]: [string, any]) => (
+            <Month key={k} info={v.info} data={v.data}  />
+          ))}
+        </div>
+        <div className={styles.halfyear}>
+          {Object.entries(calendar).slice(7).map(([k, v]: [string, any]) => (
+            <Month key={k} info={v.info} data={v.data}  />
+          ))}
+        </div>
       </div>
     </div>
   );
