@@ -12,8 +12,8 @@
   margin: 0.5em;
 }
 
-.week {
-  display: inline-block;
+.year {
+  padding: 0 50px;
 }
 
 .month {
@@ -26,4 +26,8 @@
   display: block;
   text-align: center;
   padding: 5px;
+}
+
+.week {
+  display: inline-block;
 }
