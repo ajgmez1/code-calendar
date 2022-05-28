@@ -1,0 +1,19 @@
+.calendar {
+  padding: 5px;
+}
+
+.week {
+  display: inline-block;
+}
+
+.month {
+  display: inline-block;
+  padding: 5px;
+  font-size: 0.5em;
+}
+
+.month-span {
+  display: block;
+  text-align: center;
+  padding: 5px;
+}

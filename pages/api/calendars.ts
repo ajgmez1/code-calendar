@@ -69,6 +69,7 @@ export default async (
         first = first.plus({months:1});
       }
 
+      let maxValue = 0;
       for (const c in lcCalendarRaw) {
         const d = DateTime.fromSeconds(+c);
         const y = d.year;
@@ -76,17 +77,51 @@ export default async (
         const day = d.day;
 
         lc.calendar[y+'-'+m].data[day] = lcCalendarRaw[c];
+        if (lcCalendarRaw[c] > maxValue) {
+          maxValue = lcCalendarRaw[c];
+        }
       }
 
+      const lcColorRange = [0,1,2,3,4];
+      if (maxValue > lcColorRange[4]) {
+        let diff = Math.floor(maxValue / 4);
+        lcColorRange[4] = maxValue;
+        lcColorRange[3] = maxValue - diff;
+        lcColorRange[2] = maxValue - diff * 2;
+        lcColorRange[1] = maxValue - diff * 3;
+      }
+
+      maxValue = 0;
       for (const c of g.data.items) {
         const d = DateTime.fromISO(c.commit.author.date.substring(0,10));
         const y = d.year;
         const m = d.month;
         const day = d.day;
+        const val = gh.calendar[y+'-'+m].data[day];
 
-        gh.calendar[y+'-'+m].data[day] = gh.calendar[y+'-'+m].data[day] ? +gh.calendar[y+'-'+m].data[day]+1 : 1; 
+        gh.calendar[y+'-'+m].data[day] = val ? +val+1 : 1; 
+        if (gh.calendar[y+'-'+m].data[day]  > maxValue) {
+          maxValue = gh.calendar[y+'-'+m].data[day] ;
+        }
       }
 
+      const ghColorRange = [0,1,2,3,4];
+      if (maxValue > ghColorRange[4]) {
+        let diff = Math.floor(maxValue / 4);
+        ghColorRange[4] = maxValue;
+        ghColorRange[3] = maxValue - diff;
+        ghColorRange[2] = maxValue - diff * 2;
+        ghColorRange[1] = maxValue - diff * 3;
+      }
+
+      for (const k in lc.calendar) {
+        lc.calendar[k].info.colorRange = lcColorRange;
+      }
+
+      for (const c in gh.calendar) {
+        gh.calendar[c].info.colorRange = ghColorRange;
+      }
+      
       res.status(d.status).json({
         lc: lc,
         gh: gh
