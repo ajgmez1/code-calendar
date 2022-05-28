@@ -19,8 +19,8 @@ function App() {
 
   return (
     <div> 
-      <Calendar data={calendar.gh} name={"GitHub"} />
-      <Calendar data={calendar.lc} name={"LeetCode"} />
+      <Calendar data={calendar.gh} name={"GitHub"} type={"contributions"} />
+      <Calendar data={calendar.lc} name={"LeetCode"} type={"submissions"} />
     </div>
   );
 }

@@ -2,8 +2,14 @@
   padding: 5px;
 }
 
-.calendar h2 {
+.calendar .header {
+  display: flex;
+}
+.calendar .header h2 {
   margin: 0;
+}
+.calendar .header p {
+  margin: 0.5em;
 }
 
 .week {

@@ -32,13 +32,13 @@ export default async (
   }));
 
   promises.push(axios.get('https://api.github.com/search/commits?q=' + 
-    encodeURIComponent('author:ajgmez1 committer-date:>2022-01-01 sort:committer-date') + 
+    encodeURIComponent('author:ajgmez1 committer-date:>2021-05-28 sort:committer-date') + 
     '&per_page=100&page=1')); // committer-date:>2016-01-01 sort:committer-date-asc'))); // sort:committer-date-asc repo:ajgmez1/rda-grid'));
 
   await Promise.all(promises)
     .then(([d,g]) => {
-      const lc: { calendar: any } = { calendar: {} };
-      const gh: { calendar: any } = { calendar: {} };
+      const lc: { count: number, calendar: any } = { count: 0, calendar: {} };
+      const gh: { count: number, calendar: any } = { count: 0, calendar: {} };
 
       const lcCalendarRaw = JSON.parse(d.data.data.matchedUser.userCalendar.submissionCalendar);
 
@@ -70,6 +70,7 @@ export default async (
       }
 
       let maxValue = 0;
+      let count = 0;
       for (const c in lcCalendarRaw) {
         const d = DateTime.fromSeconds(+c);
         const y = d.year;
@@ -80,6 +81,7 @@ export default async (
         if (lcCalendarRaw[c] > maxValue) {
           maxValue = lcCalendarRaw[c];
         }
+        count += lcCalendarRaw[c];
       }
 
       const lcColorRange = [0,1,2,3,4];
@@ -121,6 +123,9 @@ export default async (
       for (const k in lc.calendar) {
         lc.calendar[k].info.colorRange = lcColorRange;
       }
+
+      lc.count = count;
+      gh.count = g.data.total_count;
       
       res.status(d.status).json({
         lc: lc,
