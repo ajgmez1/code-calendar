@@ -62,7 +62,7 @@ export default async (
         gh.calendar[y+'-'+m] = gh.calendar[y+'-'+m] ? gh.calendar[y+'-'+m] : {};
 
         lc.calendar[y+'-'+m].info = dateInfo;
-        gh.calendar[y+'-'+m].info = dateInfo;
+        gh.calendar[y+'-'+m].info = { ...dateInfo };
         lc.calendar[y+'-'+m].data = {};
         gh.calendar[y+'-'+m].data = {};
 
@@ -84,11 +84,11 @@ export default async (
 
       const lcColorRange = [0,1,2,3,4];
       if (maxValue > lcColorRange[4]) {
-        let diff = Math.floor(maxValue / 4);
+        let diff = Math.floor(maxValue / 2);
         lcColorRange[4] = maxValue;
         lcColorRange[3] = maxValue - diff;
-        lcColorRange[2] = maxValue - diff * 2;
-        lcColorRange[1] = maxValue - diff * 3;
+        lcColorRange[2] = maxValue - diff * 1.5;
+        lcColorRange[1] = maxValue - diff * 1.75;
       }
 
       maxValue = 0;
@@ -107,19 +107,19 @@ export default async (
 
       const ghColorRange = [0,1,2,3,4];
       if (maxValue > ghColorRange[4]) {
-        let diff = Math.floor(maxValue / 4);
+        let diff = Math.floor(maxValue / 2);
         ghColorRange[4] = maxValue;
         ghColorRange[3] = maxValue - diff;
-        ghColorRange[2] = maxValue - diff * 2;
-        ghColorRange[1] = maxValue - diff * 3;
-      }
-
-      for (const k in lc.calendar) {
-        lc.calendar[k].info.colorRange = lcColorRange;
+        ghColorRange[2] = maxValue - diff * 1.5;
+        ghColorRange[1] = maxValue - diff * 1.75;
       }
 
       for (const c in gh.calendar) {
         gh.calendar[c].info.colorRange = ghColorRange;
+      }
+
+      for (const k in lc.calendar) {
+        lc.calendar[k].info.colorRange = lcColorRange;
       }
       
       res.status(d.status).json({
