@@ -13,7 +13,7 @@ function Calendar(
       <div className={styles.header}>
         <h2>{name}</h2> <p>{count} {type} in {yearStr}</p>
       </div>
-      {Object.entries(calendar).map(([k, v]) => (
+      {Object.entries(calendar).map(([k, v]: [string, any]) => (
         <Month key={k} info={v.info} data={v.data}  />
       ))}
     </div>
