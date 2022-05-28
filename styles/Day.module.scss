@@ -9,6 +9,21 @@
   }
 }
 
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  width: 60px;
+  margin: -40px -30px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .6s;
+}
+
 .darkgreen {
   background: #0e4429;
 }
@@ -20,19 +35,4 @@
 }
 .lightestgreen {
   background: #39d353;
-}
-
-
-.tooltip {
-  visibility: hidden;
-  position: absolute;
-  width: 60px;
-  background-color: #555;
-  color: #fff;
-  text-align: center;
-  padding: 5px;
-  border-radius: 6px;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity .6s;
 }
