@@ -3,11 +3,27 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios';
 import { DateTime } from 'luxon';
 
+const cache: {
+  time: any;
+  json: any;
+} = {
+  time: DateTime.now(),
+  json: undefined
+};
+
 export default async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
   const promises = [];
+  let last = DateTime.now();
+  let first = last.minus({years: 1});
+
+  if (cache.json && cache.time.diffNow('minutes').minutes > -1) {
+    res.status(200).json(cache.json);
+    return;
+  }
+  cache.time = DateTime.now();
   
   promises.push(axios.post('https://leetcode.com/graphql', {
     query: `
@@ -28,12 +44,12 @@ export default async (
           }
         }
       }`,
-    variables: { username: "ajgmez1", year: 2022 }
+    variables: { username: "ajgmez1" }
   }));
 
   promises.push(axios.get('https://api.github.com/search/commits?q=' + 
-    encodeURIComponent('author:ajgmez1 committer-date:>2021-05-28 sort:committer-date') + 
-    '&per_page=100&page=1')); // committer-date:>2016-01-01 sort:committer-date-asc'))); // sort:committer-date-asc repo:ajgmez1/rda-grid'));
+    encodeURIComponent(`author:ajgmez1 committer-date:>${first.toISODate()} sort:committer-date`) + 
+    '&per_page=100&page=1'));
 
   await Promise.all(promises)
     .then(([d,g]) => {
@@ -42,8 +58,6 @@ export default async (
 
       const lcCalendarRaw = JSON.parse(d.data.data.matchedUser.userCalendar.submissionCalendar);
 
-      let last = DateTime.now();
-      let first = last.minus({years: 1});
       for (let i = 0; i <= 12; i++) {
         const y = first.year;
         const m = first.month;
@@ -66,13 +80,17 @@ export default async (
         lc.calendar[y+'-'+m].data = {};
         gh.calendar[y+'-'+m].data = {};
 
-        first = first.plus({months:1});
+        if (i === 11) {
+          first = last;
+        } else {
+          first = first.plus({months:1});
+        }
       }
 
       let maxValue = 0;
       let count = 0;
       for (const c in lcCalendarRaw) {
-        const d = DateTime.fromSeconds(+c);
+        const d = DateTime.fromSeconds(+c, { zone: 'utc' });
         const y = d.year;
         const m = d.month;
         const day = d.day;
@@ -126,11 +144,11 @@ export default async (
 
       lc.count = count;
       gh.count = g.data.total_count;
+
+      let json = { lc: lc, gh: gh };
+      cache.json = json;
       
-      res.status(d.status).json({
-        lc: lc,
-        gh: gh
-      });
+      res.status(d.status).json(json);
     })
     .catch((e) => {
       console.error('errors: ', e);
