@@ -2,28 +2,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios';
 import { DateTime } from 'luxon';
-
-const cache: {
-  time: any;
-  json: any;
-} = {
-  time: DateTime.now(),
-  json: undefined
-};
+import cache from 'memory-cache';
 
 export default async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
   const promises = [];
-  let last = DateTime.now();
-  let first = last.minus({years: 1});
+  let rangeEnd = DateTime.now();
+  let rangeStart = rangeEnd.minus({years: 1});
+  const cacheKey = 'ajgmez1' + '.' + rangeEnd.toISODate();
 
-  if (cache.json && cache.time.diffNow('minutes').minutes > -1) {
-    res.status(200).json(cache.json);
+  const c = cache.get(cacheKey);
+  if (c) {
+    console.log('returning cached data for', cacheKey);
+    res.status(200).json(c);
     return;
   }
-  cache.time = DateTime.now();
   
   promises.push(axios.post('https://leetcode.com/graphql', {
     query: `
@@ -48,7 +43,7 @@ export default async (
   }));
 
   promises.push(axios.get('https://api.github.com/search/commits?q=' + 
-    encodeURIComponent(`author:ajgmez1 committer-date:>${first.toISODate()} sort:committer-date`) + 
+    encodeURIComponent(`author:ajgmez1 committer-date:>${rangeStart.toISODate()} sort:committer-date`) + 
     '&per_page=100&page=1'));
 
   await Promise.all(promises)
@@ -59,17 +54,17 @@ export default async (
       const lcCalendarRaw = JSON.parse(d.data.data.matchedUser.userCalendar.submissionCalendar);
 
       for (let i = 0; i <= 12; i++) {
-        const y = first.year;
-        const m = first.month;
-        const day1 = first.set({day:1});
-        const start = i === 0 ? first.day : 1;
-        const finish = i === 12 ? first.day : first.daysInMonth;
+        const y = rangeStart.year;
+        const m = rangeStart.month;
+        const day1 = rangeStart.set({day:1});
+        const dayStart = i === 0 ? rangeStart.day : 1;
+        const dayFinish = i === 12 ? rangeStart.day : rangeStart.daysInMonth;
 
         const dateInfo = {
-          year: first.year,
-          month: first.month,
+          year: rangeStart.year,
+          month: rangeStart.month,
           startDayOfWeek: day1.weekday,
-          range: [start, finish]
+          range: [dayStart, dayFinish]
         }
 
         lc.calendar[y+'-'+m] = lc.calendar[y+'-'+m] ? lc.calendar[y+'-'+m] : {};
@@ -81,9 +76,9 @@ export default async (
         gh.calendar[y+'-'+m].data = {};
 
         if (i === 11) {
-          first = last;
+          rangeStart = rangeEnd;
         } else {
-          first = first.plus({months:1});
+          rangeStart = rangeStart.plus({months:1});
         }
       }
 
@@ -146,7 +141,7 @@ export default async (
       gh.count = g.data.total_count;
 
       let json = { lc: lc, gh: gh };
-      cache.json = json;
+      cache.put(cacheKey, json, 60000, () => console.log(cacheKey, 'cache expired.'));
       
       res.status(d.status).json(json);
     })
