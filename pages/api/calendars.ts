@@ -15,7 +15,6 @@ export default async (
 
   const c = cache.get(cacheKey);
   if (c) {
-    console.log('returning cached data for', cacheKey);
     res.status(200).json(c);
     return;
   }
@@ -28,13 +27,6 @@ export default async (
             activeYears
             streak
             totalActiveDays
-            dccBadges {
-              timestamp
-              badge {
-                name
-                icon
-              }
-            }
             submissionCalendar
           }
         }
@@ -42,9 +34,33 @@ export default async (
     variables: { username: "ajgmez1" }
   }));
 
-  promises.push(axios.get('https://api.github.com/search/commits?q=' + 
-    encodeURIComponent(`author:ajgmez1 committer-date:>${rangeStart.toISODate()} sort:committer-date`) + 
-    '&per_page=100&page=1'));
+  promises.push(await axios.post('https://api.github.com/graphql', {
+    query: `
+      query($username: String!, $from: DateTime, $to: DateTime) {
+        user(login: $username) {
+          contributionsCollection(from: $from, to: $to) {
+            contributionCalendar {
+              totalContributions
+              weeks {
+                contributionDays {
+                  contributionCount
+                  date
+                }
+              }
+            }
+          }
+        }
+      }`,
+    variables: { 
+      username: "ajgmez1", 
+      from: rangeStart.toISO(), 
+      to: rangeEnd.toISO()
+    }
+  }, {
+    headers: {
+      'Authorization': `bearer ${process.env.AUTH_TOKEN}`
+    }
+  }));
 
   await Promise.all(promises)
     .then(([d,g]) => {
@@ -52,6 +68,7 @@ export default async (
       const gh: { count: number, calendar: any } = { count: 0, calendar: {} };
 
       const lcCalendarRaw = JSON.parse(d.data.data.matchedUser.userCalendar.submissionCalendar);
+      const ghCalendarRaw = g.data.data.user.contributionsCollection.contributionCalendar;
 
       for (let i = 0; i <= 12; i++) {
         const y = rangeStart.year;
@@ -107,16 +124,19 @@ export default async (
       }
 
       maxValue = 0;
-      for (const c of g.data.items) {
-        const d = DateTime.fromISO(c.commit.author.date.substring(0,10));
-        const y = d.year;
-        const m = d.month;
-        const day = d.day;
-        const val = gh.calendar[y+'-'+m].data[day];
+      for (const week of ghCalendarRaw.weeks) {
 
-        gh.calendar[y+'-'+m].data[day] = val ? +val+1 : 1; 
-        if (gh.calendar[y+'-'+m].data[day]  > maxValue) {
-          maxValue = gh.calendar[y+'-'+m].data[day] ;
+        for (const c of week.contributionDays) {
+          const d = DateTime.fromISO(c.date);
+          const y = d.year;
+          const m = d.month;
+          const day = d.day;
+          const val = gh.calendar[y+'-'+m].data[day];
+
+          gh.calendar[y+'-'+m].data[day] = c.contributionCount;
+          if (c.contributionCount > maxValue) {
+            maxValue = c.contributionCount;
+          }
         }
       }
 
@@ -138,15 +158,14 @@ export default async (
       }
 
       lc.count = count;
-      gh.count = g.data.total_count;
+      gh.count = ghCalendarRaw.totalContributions;
 
       let json = { lc: lc, gh: gh };
-      cache.put(cacheKey, json, 60000, () => console.log(cacheKey, 'cache expired.'));
+      cache.put(cacheKey, json, 60000);
       
       res.status(d.status).json(json);
     })
     .catch((e) => {
-      console.error('errors: ', e);
       res.status(e.response.status).json({ error: e });
     })
 };
